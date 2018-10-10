@@ -6,7 +6,7 @@
   "author": "Harry Manchanda <harmanmanchanda182@gmail.com>",
   "scripts": {
     "styles": "npx sass scss/styles.scss css/styles.css --watch",
-    "start": "npx live-server --port=8000 --host=localhost --cors"
+    "start": "npx live-server --port=1336 --host=localhost --cors"
   },
   "license": "MIT",
   "devDependencies": {
