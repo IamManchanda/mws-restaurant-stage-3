@@ -1,0 +1,15 @@
+#map-container {
+  .leaflet-control-attribution a {
+    font-size: .83rem;
+  }
+  
+  .leaflet-container a {
+    color: #0F4880;
+  }
+
+  @media screen and (max-width: 639px) {
+    .leaflet-top {
+      top: 12vh;
+    }
+  }
+}

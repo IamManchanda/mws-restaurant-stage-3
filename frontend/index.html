@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin=""/>
+  <title>Restaurant Reviews</title>
+</head>
+
+<body>
+  <header>
+    <nav class="main-nav">
+      <h1><a href="/">Restaurant Reviews</a></h1>
+    </nav>
+  </header>
+
+  <main id="maincontent">
+    <section id="map-container">
+      <a href="#content" class="skip">Skip to content</a>
+      <div id="map" aria-hidden="true" aria-role="application"></div>
+    </section>
+    <section id="content">
+      <div class="filter-options">
+        <h2>Filter Results</h2>
+        <div class="filter-options-item">
+          <div class="neighborhoods-select-container">
+            <label for="neighborhoods-select" id="neighborhoods-select-label">Neighborhoods:</label>
+            <select id="neighborhoods-select" aria-labelledby="neighborhoods-select-label" name="neighborhoods" onchange="updateRestaurants()">
+              <option value="all">All Neighborhoods</option>
+            </select>
+          </div>
+          <div class="cuisines-select-container">
+            <label for="cuisines-select" id="cuisines-select-label">Cuisines:</label>
+            <select id="cuisines-select" name="cuisines" aria-labelledby="cuisines-select-label" onchange="updateRestaurants()">
+              <option value="all">All Cuisines</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <ul id="restaurants-list"></ul>
+    </section>
+  </main>
+
+  <footer id="footer">
+    Copyright (c) 2017 <a href="/"><strong>Restaurant Reviews</strong></a> All Rights Reserved.
+  </footer>
+
+  <!-- Beginning scripts -->
+  <!-- Service Worker Registration -->
+  <script type="text/javascript" src="js/registerWorker.js"></script>
+  <!-- LeafLet -->
+  <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw==" crossorigin=""></script>
+  <!-- Database helpers -->
+  <script type="text/javascript" src="js/dbhelper.js"></script>
+  <!-- Main javascript file -->
+  <script type="text/javascript" src="js/main.js"></script>
+  <!-- End scripts -->
+
+</body>
+
+</html>
