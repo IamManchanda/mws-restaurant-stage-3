@@ -1,5 +1,7 @@
 'use strict';
 
+/* Source: https://github.com/jakearchibald/idb/blob/master/lib/idb.js */
+
 (function() {
   function toArray(arr) {
     return Array.prototype.slice.call(arr);
@@ -289,11 +291,13 @@
       var p = promisifyRequestCall(indexedDB, 'open', [name, version]);
       var request = p.request;
 
-      request.onupgradeneeded = function(event) {
-        if (upgradeCallback) {
-          upgradeCallback(new UpgradeDB(request.result, event.oldVersion, request.transaction));
-        }
-      };
+      if (request) {
+        request.onupgradeneeded = function(event) {
+          if (upgradeCallback) {
+            upgradeCallback(new UpgradeDB(request.result, event.oldVersion, request.transaction));
+          }
+        };
+      }
 
       return p.then(function(db) {
         return new DB(db);
