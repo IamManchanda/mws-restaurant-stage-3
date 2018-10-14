@@ -8,8 +8,16 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = 1337 // Change this to your server port
+    const port = 1337;
     return `http://localhost:${port}/restaurants`;
+  }
+
+  /**
+   * Get Reviews Endpoint.
+   */
+  static get REVIEWS_URL() {
+    const port = 1337;
+    return `http://localhost:${port}/reviews`;
   }
 
   /**
@@ -31,12 +39,21 @@ class DBHelper {
   }
 
   /**
-   * Opens the IndexedDB
+   * Opens the IndexedDB.
    */
   static openDB() {
-    const dbPromise = idb.open('restaurantsDB', 1, upgradeDb => {
-      const store = upgradeDb.createObjectStore('restaurants', {keyPath: 'id'});
-      store.createIndex('by-id', 'id');
+    const dbPromise = idb.open('restaurantsDB', 3, upgradeDb => {
+      switch (upgradeDb.oldVersion) {
+        case 0:
+          console.log('Creating IDB');
+          const store = upgradeDb.createObjectStore('restaurants', {keyPath: 'id'});
+          store.createIndex('by-id', 'id');
+        case 1:
+          console.log("Upgrading to DB v2");
+          const reviews = upgradeDb.createObjectStore('reviews', {keyPath: 'id'});
+          reviews.createIndex('restaurant','restaurant_id');
+          const offlineReviews = upgradeDb.createObjectStore('offline_reviews', {keyPath: 'updatedAt'});
+      }
     });
     return dbPromise;
   }
@@ -82,6 +99,20 @@ class DBHelper {
       return tx.complete;
     }).then(() => {
       console.log('Restaurants Saved');
+    });
+  }
+
+  /**
+   * Update restaurant data to IDB.
+   */
+  static updateRestaurant(data){
+    return DBHelper.openDB().then(db => {
+      if(!db) return;
+      const tx = db.transaction('restaurants', 'readwrite');
+      const store = tx.objectStore('restaurants');
+      return store.put(data);
+    }).then(() => {
+      console.log('Restaurant Updated')
     });
   }
 
@@ -190,6 +221,13 @@ class DBHelper {
         callback(null, uniqueNeighborhoods);
       }
     });
+    DBHelper.fetchReviews((error, reviews) => {
+      if (error) {
+        callback(error, null);
+      } else {
+        //console.log('dbhelper fetchReviews !error()')
+      }
+    });
   }
 
   /**
@@ -237,5 +275,181 @@ class DBHelper {
       marker.addTo(newMap);
     return marker;
   } 
+
+  /**
+   * Get the Reviews from the IDB.
+   */
+  static getReviewsFromDB() {
+    const reviewsFromDB = DBHelper.openDB()
+    .then( db => {
+      if(!db) return;
+      let store = db.transaction('reviews').objectStore('reviews').index('restaurant');
+      return '';//store.getAll();
+    });
+    return reviewsFromDB;
+  }
+
+  /**
+   * Get the Reviews from the Server API.
+   */
+  static getReviewsFromAPI(){
+    const reviewsFromAPI = fetch(DBHelper.REVIEWS_URL)
+    .then(DBHelper.checkStatus)
+    .then(DBHelper.json)
+    .then(reviews => {
+      DBHelper.saveReviews(reviews);
+      return reviews;
+    });
+    return reviewsFromAPI;
+  }
+
+  /**
+   * Get the Reviews saved as Offline.
+   */
+  static checkOfflineReviews(){
+    return new Promise((resolve,reject) => {
+      DBHelper.openDB().then(db => {
+        if(!db) return;
+        let store = db.transaction('offline_reviews').objectStore('offline_reviews');
+        store.getAll().then(data => {
+          return resolve(data);
+        }).catch(err => {
+          reject(err);
+        });
+      })
+    })
+  }
+
+  /**
+   * Save Reviews data to IDB.
+   */
+  static saveReviews(data){
+    return DBHelper.openDB().then(db => {
+      if(!db) return;
+      const tx = db.transaction('reviews', 'readwrite');
+      const store = tx.objectStore('reviews');
+      data.forEach((review) => {
+        store.put(review);
+      });
+      return tx.complete;
+    }).then(() => {
+      console.log('Reviews saved')
+    });
+  }
+
+  /**
+   * Save Review data to IDB.
+   */
+  static saveReview(data){
+    return DBHelper.openDB().then(db => {
+      if(!db) return;
+      const tx = db.transaction('reviews', 'readwrite');
+      const store = tx.objectStore('reviews');
+      store.put(data);
+      return tx.complete;
+    }).then(() => {
+      console.log('Review saved')
+      let event = new CustomEvent("update_reviews_list", {detail: {restaurant_id: data.restaurant_id}});
+      document.dispatchEvent(event);
+    });
+  }
+
+  /**
+   * Save Review data to IDB's offline store.
+   */
+  static saveReviewOffline(data){
+    return DBHelper.openDB().then(db => {
+      if(!db) return;
+      const tx = db.transaction('offline_reviews', 'readwrite');
+      const store = tx.objectStore('offline_reviews');
+      store.put(data);
+      return tx.complete;
+    }).then(() => {
+      console.log('Review saved offline')
+    });
+  }
+
+  /**
+   * Submit the restaurant review to server.
+   */
+  static sendReview(data) {
+    return fetch(DBHelper.REVIEWS_URL, {
+      body: JSON.stringify(data),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+    })
+    .then(response => {
+      response.json()
+      .then(data => {
+        data['restaurant_id'] = parseInt(getParameterByName('id'));
+        data['updatedAt'] = new Date().getTime();
+        data['createdAt'] = new Date().getTime();
+        DBHelper.saveReview(data);
+      })
+    })
+    .catch(error => {
+      data['restaurant_id'] = parseInt(getParameterByName('id'));
+      data['updatedAt'] = new Date().getTime();
+      data['createdAt'] = new Date().getTime();
+      DBHelper.saveReviewOffline(data);
+    });
+  }
+
+  /**
+   * Remove Offline Reviews and send them to server.
+   */
+  static removeOfflineReview(data) {
+    return new Promise((resolve,reject) => {
+      DBHelper.openDB().then(db => {
+        if (!db) return;
+        const tx = db.transaction('offline_reviews', 'readwrite');
+        const requests = [];
+
+        tx.objectStore('offline_reviews')
+        .iterateCursor(cursor => {
+          if (!cursor) return;
+          DBHelper.sendReview(cursor.value)
+          requests.push(cursor.value);
+          cursor.delete();
+          cursor.continue();
+        }).then(() => {
+          console.log('Item deleted');
+        }).then(() => {
+          return tx.complete;
+        })
+      })
+    })
+  }
+
+  /**
+   * Fetch all reviews.
+   */
+  static fetchReviews(callback) {
+    return DBHelper.getReviewsFromDB().then(reviews => {
+      if(reviews.length) {
+        return Promise.resolve(reviews);
+      } else {
+        return DBHelper.getReviewsFromAPI();
+      }
+    }).then(reviews => {
+      callback(null, reviews);
+    }).catch(error => {
+      callback(error, null);
+    })
+  }
+
+  /**
+   * Fetch reviews by its ID.
+   */
+  static fetchReviewByRestaurant(id, callback) {
+    return DBHelper.openDB().then(db => {
+      return db.transaction('reviews').objectStore('reviews').index('restaurant').getAll(id);
+    }).then(obj => {
+      return obj
+    });
+  }
 }
 
