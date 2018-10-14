@@ -218,19 +218,19 @@ const getParameterByName = (name, url) => {
  */
 const submitReview = () => {
   let review = {};
-  let formEl = document.getElementById('post-review-form');
-  let formElID = document.getElementById('restaurant_id');
-  formElID.value = parseInt(getParameterByName('id'));
-  formEl.appendChild(formElID);
-  for (let i = 0; i < formEl.length; ++i) {
-    let fieldName = formEl[i].name;
-    let value = formEl[i].value;
+  let formElement = document.getElementById('post-review-form');
+  let formElementID = document.getElementById('restaurant_id');
+  formElementID.value = parseInt(getParameterByName('id'));
+  formElement.appendChild(formElementID);
+  for (let i = 0; i < formElement.length; ++i) {
+    let fieldName = formElement[i].name;
+    let value = formElement[i].value;
     if (fieldName === "" || value === "") continue;
     if (fieldName === "restaurant_id" || fieldName === "rating") {
       value = parseInt(value);
     }
-    review[formEl[i].name] = value;
+    review[formElement[i].name] = value;
   }
-  formEl.reset();
+  formElement.reset();
   DBHelper.sendReview(review);
 }
