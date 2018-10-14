@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 /**
  * Initialize leaflet map
  */
-initMap = () => {
+const initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
       console.error(error);
@@ -30,6 +30,7 @@ initMap = () => {
         id: 'mapbox.streets'    
       }).addTo(newMap);
       fillBreadcrumb();
+      updateReviews(restaurant);
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
   });
@@ -38,32 +39,39 @@ initMap = () => {
 /**
  * Get current restaurant from page URL.
  */
-fetchRestaurantFromURL = (callback) => {
-  if (self.restaurant) { // restaurant already fetched!
-    callback(null, self.restaurant)
-    return;
-  }
-  const id = getParameterByName('id');
-  if (!id) { // no id found in URL
-    error = 'No restaurant id in URL'
-    callback(error, null);
-  } else {
-    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-      self.restaurant = restaurant;
-      if (!restaurant) {
-        console.error(error);
-        return;
-      }
-      fillRestaurantHTML();
-      callback(null, restaurant)
-    });
-  }
-}
+const fetchRestaurantFromURL = (callback) => {
+  return new Promise((resolve, reject) => {
+    if (self.restaurant) { // restaurant already fetched!
+      return resolve(self.restaurant);
+    }
+    const id = getParameterByName('id');
+    if (!id) { // no id found in URL
+      error = 'No restaurant id in URL'
+      return reject(error);
+    } else {
+      DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+        self.restaurant = restaurant;
+        if (!restaurant) {
+          return reject(error);
+        }
+        fillRestaurantHTML();
+        DBHelper.fetchReviewByRestaurant(restaurant.id)
+          .then((reviews) => {
+            fillReviewsHTML(reviews);
+            callback(null, restaurant);
+            return resolve(self.restaurant);
+          }).catch(err => {
+            return reject(err);
+          });
+      });
+    }
+  });
+};
 
 /**
  * Create restaurant HTML and add it to the webpage
  */
-fillRestaurantHTML = (restaurant = self.restaurant) => {
+const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
@@ -90,7 +98,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
  */
-fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
+const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
   for (let key in operatingHours) {
     const row = document.createElement('tr');
@@ -110,18 +118,14 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h3');
   title.innerHTML = 'Reviews';
-  container.appendChild(title);
 
-  if (!reviews) {
-    const noReviews = document.createElement('p');
-    noReviews.innerHTML = 'No reviews yet!';
-    container.appendChild(noReviews);
-    return;
-  }
+  if (!reviews) return undefined;
+  else container.appendChild(title);
+  
   const ul = document.getElementById('reviews-list');
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
@@ -130,16 +134,27 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 }
 
 /**
+ * Remove all reviews HTML.
+ */
+const resetReviewsHTML = () => {
+  const container = document.getElementById('reviews-container');
+  container.innerHTML = "";
+  const ul = document.createElement('ul');
+  ul.id = 'reviews-list';
+  container.appendChild(ul);
+};
+
+/**
  * Create review HTML and add it to the webpage.
  */
-createReviewHTML = (review) => {
+const createReviewHTML = (review) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.innerHTML = review.name;
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.updatedAt).toLocaleDateString();
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -156,7 +171,7 @@ createReviewHTML = (review) => {
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-fillBreadcrumb = (restaurant=self.restaurant) => {
+const fillBreadcrumb = (restaurant=self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
@@ -164,9 +179,28 @@ fillBreadcrumb = (restaurant=self.restaurant) => {
 }
 
 /**
+ * Update reviews
+*/
+const updateReviews = (restaurant) => {
+  let form = document.getElementById('post-review-form');
+  form.addEventListener('submit', function(ev) {
+    ev.preventDefault();
+    submitReview();
+  })
+  document.addEventListener("update_reviews_list", (ev) => {
+    resetReviewsHTML();
+    DBHelper.fetchReviewByRestaurant(restaurant.id)
+      .then((reviews) => {
+        fillReviewsHTML(reviews);
+      })
+  });
+  console.log('Review updated');
+};
+
+/**
  * Get a parameter by name from page URL.
  */
-getParameterByName = (name, url) => {
+const getParameterByName = (name, url) => {
   if (!url)
     url = window.location.href;
   name = name.replace(/[\[\]]/g, '\\$&');
@@ -177,4 +211,26 @@ getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+/**
+ * Catch the restaurant review form action.
+ */
+const submitReview = () => {
+  let review = {};
+  let formEl = document.getElementById('post-review-form');
+  let formElID = document.getElementById('restaurant_id');
+  formElID.value = parseInt(getParameterByName('id'));
+  formEl.appendChild(formElID);
+  for (let i = 0; i < formEl.length; ++i) {
+    let fieldName = formEl[i].name;
+    let value = formEl[i].value;
+    if (fieldName === "" || value === "") continue;
+    if (fieldName === "restaurant_id" || fieldName === "rating") {
+      value = parseInt(value);
+    }
+    review[formEl[i].name] = value;
+  }
+  formEl.reset();
+  DBHelper.sendReview(review);
 }
