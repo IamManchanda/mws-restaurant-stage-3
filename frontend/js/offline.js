@@ -16,9 +16,9 @@ const registerSW = () => {
 
 const connectionStatus = (connected) => {
   if (connected) {
-    let elAlert = document.getElementById('offline-alert');
-    if(elAlert) {
-      elAlert.parentElement.removeChild(elAlert);
+    let connectedElementAlert = document.getElementById('offline-alert');
+    if(connectedElementAlert) {
+      connectedElementAlert.parentElement.removeChild(connectedElementAlert);
     }
     DBHelper.checkOfflineReviews().then(reviews => {
       reviews.forEach((review) => DBHelper.removeOfflineReview(review));
