@@ -79,3 +79,16 @@
     font-size: 0.917rem;
   }
 }
+
+.post-form-button {
+  background-color: $secondary-color;
+  border-bottom: 3px solid $gray-color-2;
+  color: $white-color;
+  display: inline-block;
+  font-size: 0.83rem;
+  margin: 15px 0 0;
+  padding: 15px 30px 15px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}

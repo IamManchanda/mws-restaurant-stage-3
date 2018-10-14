@@ -53,6 +53,25 @@
       <ul id="reviews-list"></ul>
     </section>
     <!-- End reviews -->
+    <!-- Beginning reviews form -->
+    <section id="post-review">
+      <h3>Post review</h3>
+      <form id="post-review-form">
+        <input type="hidden" name="restaurant_id" id="restaurant_id" value="" />
+        
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required>
+        
+        <label for="rating">Rating</label>
+        <input type="number" id="rating" name="rating" min="0" max="5" required>
+
+        <label for="comments">Comment</label>
+        <textarea id="comments" name="comments" rows="9" required></textarea>
+
+        <button type="submit" class="post-form-button">Send</button>
+      </form>
+    </section>
+    <!-- End reviews form -->
   </main>
   <!-- End main -->
 

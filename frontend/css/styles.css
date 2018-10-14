@@ -382,6 +382,19 @@ nav.main-nav h1 a {
   font-size: 0.917rem;
 }
 
+.post-form-button {
+  background-color: #D43900;
+  border-bottom: 3px solid #eeeeee;
+  color: #fefefe;
+  display: inline-block;
+  font-size: 0.83rem;
+  margin: 15px 0 0;
+  padding: 15px 30px 15px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
 .inside header {
   position: fixed;
   top: 0;
@@ -459,7 +472,8 @@ nav.main-nav h1 a {
 }
 
 #restaurant-container,
-#reviews-container {
+#reviews-container,
+#post-review {
   border-bottom: 1px solid #dddddd;
   border-top: 1px solid #fefefe;
   padding: 2rem;
@@ -467,7 +481,8 @@ nav.main-nav h1 a {
 }
 @media screen and (max-width: 639px) {
   #restaurant-container,
-#reviews-container {
+#reviews-container,
+#post-review {
     width: 100%;
   }
 }
@@ -501,7 +516,8 @@ nav.main-nav h1 a {
   }
 }
 
-#reviews-container h3 {
+#reviews-container h3,
+#post-review h3 {
   color: #D43900;
   font-size: 2rem;
   font-weight: 300;
@@ -509,7 +525,8 @@ nav.main-nav h1 a {
   padding-bottom: 0.83rem;
 }
 @media screen and (min-width: 640px) {
-  #reviews-container {
+  #reviews-container,
+#post-review {
     padding-bottom: 7rem;
   }
 }
@@ -560,6 +577,16 @@ nav.main-nav h1 a {
 
 #restaurant-hours td {
   color: #666666;
+}
+
+#post-review-form {
+  display: flex;
+  flex-direction: column;
+}
+#post-review-form input,
+#post-review-form textarea {
+  padding: 10px;
+  margin-bottom: 20px;
 }
 
 a.skip {

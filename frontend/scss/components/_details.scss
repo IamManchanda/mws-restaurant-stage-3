@@ -77,7 +77,8 @@
 }
 
 #restaurant-container, 
-#reviews-container {
+#reviews-container,
+#post-review {
   border-bottom: 1px solid $gray-color-3;
   border-top: 1px solid $white-color;
   padding: 2rem;
@@ -118,7 +119,8 @@
   }
 }
 
-#reviews-container {
+#reviews-container,
+#post-review {
   h3 {
     color: $secondary-color;
     font-size: 2rem;
@@ -186,5 +188,16 @@
 #restaurant-hours {
   td {
     color: $gray-color-6;
+  }
+}
+
+#post-review-form {
+  display: flex;
+  flex-direction: column;
+
+  input,
+  textarea {
+    padding: 10px;
+    margin-bottom: 20px;
   }
 }
