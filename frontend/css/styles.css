@@ -575,6 +575,45 @@ nav.main-nav h1 a {
   margin: 0;
 }
 
+#restaurant-container #restaurant-heading {
+  position: relative;
+}
+#restaurant-container #restaurant-heading #is-fav {
+  border: none;
+  background: transparent;
+  padding: 0 40px 0 0;
+  height: 32px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: #666666;
+  font-size: 16px;
+  cursor: pointer;
+}
+@media screen and (max-width: 1199px) {
+  #restaurant-container #restaurant-heading #is-fav {
+    position: relative;
+    margin-bottom: 16px;
+  }
+}
+#restaurant-container #restaurant-heading #is-fav:after {
+  background-image: url(../img/heart-light.svg);
+  content: "";
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+#restaurant-container #restaurant-heading #is-fav.toggle-heart:after {
+  background-image: url(../img/heart-dark.svg);
+}
+
+#restaurant-img {
+  display: block;
+}
+
 #restaurant-hours td {
   color: #666666;
 }

@@ -53,6 +53,10 @@ class DBHelper {
           const reviews = upgradeDb.createObjectStore('reviews', {keyPath: 'id'});
           reviews.createIndex('restaurant','restaurant_id');
           const offlineReviews = upgradeDb.createObjectStore('offline_reviews', {keyPath: 'updatedAt'});
+        case 2:
+          console.log("Upgrading to DB v3");
+          const offlineFavourites = upgradeDb.createObjectStore('offline_favourites', {keyPath: 'restaurant_id'});
+          offlineFavourites.createIndex('by-restaurant', 'restaurant_id');
       }
     });
     return dbPromise;
@@ -450,6 +454,88 @@ class DBHelper {
     }).then(obj => {
       return obj
     });
+  }
+
+  /**
+   * Save Favourite data to IDB's offline store.
+   */
+  static saveFavouriteOffline(id, favourite_status){
+    const data = []
+    data['restaurant_id'] = parseInt(id);
+    data['is_favorite'] = favourite_status;
+
+    return DBHelper.openDB().then(db => {
+      if(!db) return;
+      const tx = db.transaction('offline_favourites', 'readwrite');
+      const store = tx.objectStore('offline_favourites');
+      store.put(data);
+      return tx.complete;
+    }).then(() => {
+      console.log('Favourite saved offline')
+    });
+  }
+
+  /**
+   * Submit the restaurant review to server.
+   */
+  static sendFavourite(id, favourite_status) {
+    let UPDATE_FAV_URL = `${DBHelper.DATABASE_URL}/${id}/?is_favorite=${favourite_status}`
+
+    return fetch(UPDATE_FAV_URL, {
+      method: 'PUT',
+    })
+    .then(response => {
+      response.json()
+      .then(data => {
+        DBHelper.updateRestaurant(data);
+      })
+    })
+    .catch(error => {
+      DBHelper.saveFavouriteOffline(id, favourite_status);
+    });
+  }
+
+  /**
+   * Get the Favourites saved as Offline.
+   */
+  static checkOfflineFavourites(){
+    return new Promise((resolve,reject) => {
+      DBHelper.openDB().then(db => {
+        if(!db) return;
+        let store = db.transaction('offline_favourites').objectStore('offline_favourites');
+        store.getAll().then(data => {
+          return resolve(data);
+        }).catch(err => {
+          reject(err);
+        });
+      })
+    })
+  }
+
+  /**
+   * Remove Offline Favourites and send them to server.
+   */
+  static removeOfflineFavourite(data) {
+    return new Promise((resolve,reject) => {
+      DBHelper.openDB().then(db => {
+        if (!db) return;
+        const tx = db.transaction('offline_favourites', 'readwrite');
+        const requests = [];
+
+        tx.objectStore('offline_favourites')
+        .iterateCursor(cursor => {
+          if (!cursor) return;
+          DBHelper.sendFavourite(cursor.value.restaurant_id, cursor.value.is_favorite)
+          requests.push(cursor.value);
+          cursor.delete();
+          cursor.continue();
+        }).then(() => {
+          console.log('Favourite deleted');
+        }).then(() => {
+          return tx.complete;
+        })
+      })
+    })
   }
 }
 

@@ -1,4 +1,4 @@
-let staticCacheName = 'restaurant-review-static-v15';
+let staticCacheName = 'restaurant-review-static-v16';
 
 self.addEventListener('install', function (event) {
   event.waitUntill(
@@ -22,6 +22,8 @@ self.addEventListener('install', function (event) {
           'img/8.jpg',
           'img/9.jpg',
           'img/10.jpg',
+          'img/heart-light.svg',
+          'img/heart-dark.svg',
           'https://unpkg.com/leaflet@1.3.1/dist/leaflet.css',
           'https://unpkg.com/leaflet@1.3.1/dist/leaflet.js',
         ]);
