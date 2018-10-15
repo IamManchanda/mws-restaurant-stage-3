@@ -185,6 +185,51 @@
   }
 }
 
+#restaurant-container {
+  #restaurant-heading {
+    position: relative;
+
+    #is-fav {
+      border: none;
+      background: transparent;  
+      padding: 0 40px 0 0;
+      height: 32px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      color: $gray-color-6;
+      font-size: 16px;
+      cursor: pointer;
+
+      @media screen and (max-width: 639px) {
+        position: relative;
+        margin-bottom: 16px;
+      }
+  
+      &:after {
+        background-image: url(../img/heart-light.svg);
+        content: '';
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+  
+      &.toggle-heart {
+        &:after {
+          background-image: url(../img/heart-dark.svg);
+        }
+      }
+    }
+  }
+}
+
+#restaurant-img {
+  display: block;
+}
+
 #restaurant-hours {
   td {
     color: $gray-color-6;

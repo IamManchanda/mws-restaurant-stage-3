@@ -21,6 +21,7 @@
 ### Stage 3
 
 - Video Screenshot for Form Review Submission - Online & Offline is [here](https://drive.google.com/file/d/1TjaWdVD_4O8aV1owinWScznPLSyh2b1C/view)
+- Video Screenshot for Favourite Toggle is [here](https://drive.google.com/file/d/1mRqjPn61wFDJLAOXDolCB3uPhMaIscII/view)
 
 ## Lighthouse
 

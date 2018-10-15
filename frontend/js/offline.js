@@ -22,7 +22,10 @@ const connectionStatus = (connected) => {
     }
     DBHelper.checkOfflineReviews().then(reviews => {
       reviews.forEach((review) => DBHelper.removeOfflineReview(review));
-    })
+    });
+    DBHelper.checkOfflineFavourites().then(favourites => {
+      favourites.forEach((favourite) => DBHelper.removeOfflineFavourite(favourite));
+    });
   } else {
     let offlineAlert = document.createElement('p');
     offlineAlert.id = 'offline-alert';

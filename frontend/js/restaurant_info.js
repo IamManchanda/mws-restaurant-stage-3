@@ -57,8 +57,9 @@ const fetchRestaurantFromURL = (callback) => {
         fillRestaurantHTML();
         DBHelper.fetchReviewByRestaurant(restaurant.id)
           .then((reviews) => {
-            fillReviewsHTML(reviews);
             callback(null, restaurant);
+            fillReviewsHTML(reviews);
+            fillFavouritesHTML(restaurant.is_favorite);
             return resolve(self.restaurant);
           }).catch(err => {
             return reject(err);
@@ -234,3 +235,55 @@ const submitReview = () => {
   formElement.reset();
   DBHelper.sendReview(review);
 }
+
+/**
+ * Manage Favorite button
+ */
+const favoriteToggle = () => {
+  let favButton = document.getElementById('is-fav');
+  favButton.classList.toggle('toggle-heart');
+
+  let buttonState = favButton.getAttribute('aria-pressed');
+  console.log(buttonState);
+  let pressed = 'false';
+  let labelText = 'Mark as favourite';
+  
+  if (buttonState === 'true') {
+    pressed = 'false';
+    labelText = 'Mark as favourite';
+  } else {
+    pressed = 'true';
+    labelText = 'Remove favourite';
+  }
+
+  favButton.setAttribute('aria-pressed', pressed);
+  favButton.setAttribute('aria-label', labelText);
+  favButton.innerHTML = labelText;
+
+  const id = getParameterByName('id');
+  DBHelper.sendFavourite(id, pressed);
+}
+
+/**
+ * Create all reviews HTML and add them to the webpage.
+ */
+const fillFavouritesHTML = (is_favorite) => {
+  let favButton = document.getElementById('is-fav');
+  let pressed = '';
+  let labelText = '';
+
+  if (is_favorite === 'true' || is_favorite === true) {
+    pressed = 'true';
+    labelText = 'Remove favourite';
+    favButton.classList.add('toggle-heart');
+  } else {
+    pressed = 'false';
+    labelText = 'Mark as favourite';
+    favButton.classList.remove('toggle-heart');
+  }
+
+  favButton.setAttribute('aria-pressed', pressed);
+  favButton.setAttribute('aria-label', labelText);
+  favButton.innerHTML = labelText;
+}
+

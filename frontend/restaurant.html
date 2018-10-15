@@ -41,7 +41,17 @@
     <!-- End map -->
     <!-- Beginning restaurant -->
     <section id="restaurant-container">
-      <h2 id="restaurant-name"></h2>
+      <div id="restaurant-heading">
+        <h2 id="restaurant-name"></h2>
+        <button 
+          id="is-fav" 
+          type="button" 
+          aria-pressed="false" 
+          aria-label="Mark as favourite" 
+          onclick="favoriteToggle()">
+          Mark as favourite
+        </button>
+      </div>
       <img id="restaurant-img">
       <p id="restaurant-cuisine"></p>
       <p id="restaurant-address"></p>
