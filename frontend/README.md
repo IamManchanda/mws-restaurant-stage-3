@@ -1,4 +1,4 @@
-# Mobile Web Specialist: Stage 1
+# Frontend Server
 
 ## Installation
 

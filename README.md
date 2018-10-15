@@ -1,4 +1,4 @@
-# Mobile Web Specialist: Stage 2
+# Mobile Web Specialist: Stage 3
 
 ## Usage
 
